@@ -1,0 +1,87 @@
+{
+  "general": {
+    "run_interval_minutes": 60,
+    "posts_per_run": 2,
+    "categories": [
+      "technology",
+      "business",
+      "politics",
+      "health",
+      "science",
+      "sports",
+      "entertainment",
+      "world"
+    ],
+    "preferred_categories": [
+      "technology",
+      "business"
+    ],
+    "min_article_age_minutes": 10,
+    "max_article_age_hours": 24,
+    "auto_schedule": true
+  },
+  "crawler": {
+    "max_sources_per_run": 3,
+    "max_articles_per_source": 5,
+    "cache_expiry_hours": 1,
+    "news_sources": [
+      {
+        "name": "BBC News",
+        "rss_url": "http://feeds.bbci.co.uk/news/rss.xml",
+        "type": "rss"
+      },
+      {
+        "name": "CNN",
+        "rss_url": "http://rss.cnn.com/rss/edition.rss",
+        "type": "rss"
+      },
+      {
+        "name": "Reuters",
+        "rss_url": "http://feeds.reuters.com/reuters/topNews",
+        "type": "rss"
+      }
+    ]
+  },
+  "extractor": {
+    "min_article_length": 200,
+    "extract_images": true,
+    "summarize_content": true
+  },
+  "poster": {
+    "platforms": [
+      "twitter"
+    ],
+    "max_posts_per_day": 10,
+    "min_interval_minutes": 30,
+    "include_image": true,
+    "platforms_config": {
+      "twitter": {
+        "enabled": true,
+        "api_key": "",
+        "api_secret": "",
+        "access_token": "",
+        "token_secret": ""
+      },
+      "facebook": {
+        "enabled": false,
+        "page_id": "",
+        "access_token": ""
+      }
+    }
+  },
+  "scheduling": {
+    "active_hours_start": "08:00",
+    "active_hours_end": "22:00",
+    "best_posting_times": [
+      "08:00",
+      "12:00",
+      "17:00",
+      "20:00"
+    ],
+    "weekend_schedule": [
+      "10:00",
+      "14:00",
+      "18:00"
+    ]
+  }
+}

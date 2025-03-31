@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MoneyPrinterV2 Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <h1><i class="fas fa-money-bill-wave"></i> MoneyPrinterV2</h1>
+                <p>AI-Powered Content Monetization</p>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="{{ url_for('index') }}" class="active"><i class="fas fa-home"></i> Dashboard</a></li>
+                    <li><a href="{{ url_for('generate') }}"><i class="fas fa-pen"></i> Generate Content</a></li>
+                    <li><a href="{{ url_for('monetization') }}"><i class="fas fa-dollar-sign"></i> Monetization</a></li>
+                    <li><a href="{{ url_for('digital_products') }}"><i class="fas fa-file-alt"></i> Digital Products</a></li>
+                    <li><a href="{{ url_for('config') }}"><i class="fas fa-cog"></i> Settings</a></li>
+                </ul>
+            </nav>
+        </header>
+
+        <main>
+            <div class="dashboard">
+                <h2>Welcome to MoneyPrinterV2</h2>
+                
+                {% if not has_api_key %}
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <p>OpenAI API key not configured. Please go to <a href="{{ url_for('config') }}">Settings</a> to add your API key.</p>
+                </div>
+                {% endif %}
+                
+                {% if error %}
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <p>Error: {{ error }}</p>
+                </div>
+                {% endif %}
+                
+                {% if not initialized and not initializing %}
+                <div class="card">
+                    <div class="card-header">
+                        <h3>System Initialization</h3>
+                    </div>
+                    <div class="card-body">
+                        <p>The system needs to be initialized before use.</p>
+                        <button id="initialize-btn" class="btn btn-primary">Initialize System</button>
+                    </div>
+                </div>
+                {% elif initializing %}
+                <div class="card">
+                    <div class="card-header">
+                        <h3>System Initialization</h3>
+                    </div>
+                    <div class="card-body">
+                        <p>Initializing system components...</p>
+                        <div class="loader"></div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="card">
+                    <div class="card-header">
+                        <h3>System Status</h3>
+                    </div>
+                    <div class="card-body">
+                        <p><i class="fas fa-check-circle text-success"></i> System initialized and ready to use.</p>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <div class="dashboard-grid">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Quick Actions</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="quick-actions">
+                                <a href="{{ url_for('generate') }}" class="btn btn-primary"><i class="fas fa-pen"></i> Generate Content</a>
+                                <a href="{{ url_for('create_product') }}" class="btn btn-secondary"><i class="fas fa-file-alt"></i> Create Digital Product</a>
+                                <a href="{{ url_for('config') }}" class="btn btn-secondary"><i class="fas fa-cog"></i> Configure Settings</a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Supported Platforms</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="platform-list">
+                                <div class="platform">
+                                    <i class="fab fa-youtube"></i>
+                                    <span>YouTube</span>
+                                </div>
+                                <div class="platform">
+                                    <i class="fab fa-twitter"></i>
+                                    <span>X (Twitter)</span>
+                                </div>
+                                <div class="platform">
+                                    <i class="fas fa-comment-dots"></i>
+                                    <span>Threads</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Monetization Methods</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="monetization-methods">
+                            <div class="method">
+                                <i class="fas fa-link"></i>
+                                <h4>Affiliate Marketing</h4>
+                                <p>Generate content with affiliate links to earn commissions.</p>
+                            </div>
+                            <div class="method">
+                                <i class="fas fa-handshake"></i>
+                                <h4>Brand Sponsorships</h4>
+                                <p>Create sponsored content for brands and businesses.</p>
+                            </div>
+                            <div class="method">
+                                <i class="fas fa-file-alt"></i>
+                                <h4>Digital Products</h4>
+                                <p>Create and sell digital products like guides and templates.</p>
+                            </div>
+                            <div class="method">
+                                <i class="fas fa-users"></i>
+                                <h4>Subscriptions</h4>
+                                <p>Offer premium content through subscription tiers.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>&copy; 2025 MoneyPrinterV2 | Powered by OpenAI</p>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const initializeBtn = document.getElementById('initialize-btn');
+            
+            if (initializeBtn) {
+                initializeBtn.addEventListener('click', function() {
+                    initializeSystem();
+                });
+            }
+            
+            {% if initializing %}
+            checkInitStatus();
+            {% endif %}
+        });
+        
+        function initializeSystem() {
+            fetch('/initialize', {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                location.reload();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+        
+        function checkInitStatus() {
+            fetch('/status')
+            .then(response => response.json())
+            .then(data => {
+                if (data.initialized || data.error) {
+                    location.reload();
+                } else if (data.initializing) {
+                    setTimeout(checkInitStatus, 2000);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                setTimeout(checkInitStatus, 5000);
+            });
+        }
+    </script>
+</body>
+</html>

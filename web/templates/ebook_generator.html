@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>eBook Generator - MoneyPrinterV2</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <h1><i class="fas fa-money-bill-wave"></i> MoneyPrinterV2</h1>
+                <p>AI-Powered Content Monetization</p>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="{{ url_for('index') }}"><i class="fas fa-home"></i> Control Tower</a></li>
+                    <li><a href="{{ url_for('generate') }}"><i class="fas fa-pen"></i> Generate Content</a></li>
+                    <li><a href="{{ url_for('monetization') }}"><i class="fas fa-dollar-sign"></i> Monetization</a></li>
+                    <li><a href="{{ url_for('ebook_generator') }}" class="active"><i class="fas fa-book"></i> eBook Generator</a></li>
+                    <li><a href="{{ url_for('digital_products') }}"><i class="fas fa-file-alt"></i> Digital Products</a></li>
+                    <li><a href="{{ url_for('config') }}"><i class="fas fa-cog"></i> Settings</a></li>
+                </ul>
+            </nav>
+        </header>
+
+        <main>
+            <div class="content-section">
+                <h2>eBook Generator & Amazon Publisher</h2>
+                
+                {% if error %}
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <p>Error: {{ error }}</p>
+                </div>
+                {% endif %}
+                
+                {% if success %}
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle"></i>
+                    <p>{{ success }}</p>
+                </div>
+                {% endif %}
+                
+                <div class="ebook-tabs">
+                    <div class="tab-buttons">
+                        <button class="tab-btn active" data-tab="create">Create eBook</button>
+                        <button class="tab-btn" data-tab="manage">Manage eBooks</button>
+                        <button class="tab-btn" data-tab="publish">Publish to Amazon</button>
+                    </div>
+                    
+                    <div class="tab-content">
+                        <!-- Create eBook Tab -->
+                        <div class="tab-pane active" id="create-tab">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3>Create a New eBook</h3>
+                                </div>
+                                <div class="card-body">
+                                    <form action="{{ url_for('create_ebook') }}" method="post">
+                                        <div class="form-group">
+                                            <label for="theme">eBook Theme/Topic:</label>
+                                            <div class="input-with-button">
+                                                <input type="text" id="theme" name="theme" placeholder="Enter a theme or topic for your eBook" required>
+                                                <button type="button" id="generate-theme-btn" class="btn btn-secondary">
+                                                    <i class="fas fa-magic"></i> Generate
+                                                </button>
+                                            </div>
+                                            <small>Be specific about your topic for better results. Example: "Beginner's Guide to Sustainable Urban Gardening"</small>
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label for="target_length">eBook Length:</label>
+                                            <select id="target_length" name="target_length" required>
+                                                <option value="short">Short (5-7 chapters)</option>
+                                                <option value="medium" selected>Medium (10-12 chapters)</option>
+                                                <option value="long">Long (15-20 chapters)</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label for="audience">Target Audience:</label>
+                                            <select id="audience" name="audience" required>
+                                                <option value="beginners">Beginners</option>
+                                                <option value="intermediate">Intermediate</option>
+                                                <option value="advanced">Advanced</option>
+                                                <option value="all_levels">All Levels</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label for="style">Writing Style:</label>
+                                            <select id="style" name="style" required>
+                                                <option value="informative">Informative/Educational</option>
+                                                <option value="conversational">Conversational/Friendly</option>
+                                                <option value="professional">Professional/Formal</option>
+                                                <option value="storytelling">Storytelling/Narrative</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <div class="form-actions">
+                                            <button type="submit" class="btn btn-primary">Generate eBook</button>
+                                            <button type="reset" class="btn btn-secondary">Reset</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                            
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3>eBook Generation Process</h3>
+                                </div>
+                                <div class="card-body">
+                                    <div class="process-steps">
+                                        <div class="process-step">
+                                            <div class="step-number">1</div>
+                                            <div class="step-content">
+                                                <h4>Outline Creation</h4>
+                                                <p>AI generates a detailed outline with title, subtitle, chapters, and key points.</p>
+                                            </div>
+                                        </div>
+                                        <div class="process-step">
+                                            <div class="step-number">2</div>
+                                            <div class="step-content">
+                                                <h4>Content Generation</h4>
+                                                <p>Each chapter is written with comprehensive, engaging content based on the outline.</p>
+                                            </div>
+                                        </div>
+                                        <div class="process-step">
+                                            <div class="step-number">3</div>
+                                            <div class="step-content">
+                                                <h4>Cover Design</h4>
+                                                <p>AI creates a professional eBook cover with title and subtitle.</p>
+                                            </div>
+                                        </div>
+                                        <div class="process-step">
+                                            <div class="step-number">4</div>
+                                            <div class="step-content">
+                                                <h4>Format Conversion</h4>
+                                                <p>Content is formatted for Kindle, EPUB, and PDF formats.</p>
+                                            </div>
+                                        </div>
+                                        <div class="process-step">
+                                            <div class="step-number">5</div>
+                                            <div class="step-content">
+                                                <h4>Amazon Publishing</h4>
+                                                <p>Prepare files and metadata for Amazon KDP publishing.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Manage eBooks Tab -->
+                        <div class="tab-pane" id="manage-tab">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3>Your eBooks</h3>
+                                </div>
+                                <div class="card-body">
+                                    {% if ebooks %}
+                                    <div class="ebooks-grid">
+                                        {% for ebook_id, ebook in ebooks.items() %}
+                                        <div class="ebook-card">
+                                            <div class="ebook-cover">
+                                                {% if ebook.cover_path %}
+                                                <img src="{{ url_for('static', filename='ebooks/' + ebook_id + '/cover.png') }}" alt="{{ ebook.title }} cover">
+                                                {% else %}
+                                                <div class="placeholder-cover">
+                                                    <i class="fas fa-book"></i>
+                                                </div>
+                                                {% endif %}
+                                            </div>
+                                            <div class="ebook-info">
+                                                <h4>{{ ebook.title }}</h4>
+                                                <p>{{ ebook.subtitle }}</p>
+                                                <div class="ebook-meta">
+                                                    <span><i class="fas fa-file-alt"></i> {{ ebook.metadata.word_count }} words</span>
+                                                    <span><i class="fas fa-calendar"></i> {{ ebook.metadata.created_at|date }}</span>
+                                                </div>
+                                                <div class="ebook-status">
+                                                    {% if ebook.amazon_kdp.status == "published" %}
+                                                    <span class="status published">Published on Amazon</span>
+                                                    {% elif ebook.amazon_kdp.status == "ready_for_publishing" %}
+                                                    <span class="status ready">Ready for Publishing</span>
+                                                    {% elif ebook.amazon_kdp.status == "in_review" %}
+                                                    <span class="status review">In Review</span>
+                                                    {% else %}
+                                                    <span class="status draft">Draft</span>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            <div class="ebook-actions">
+                                                <a href="{{ url_for('view_ebook', ebook_id=ebook_id) }}" class="btn btn-primary btn-sm">View</a>
+                                                <a href="{{ url_for('download_ebook', ebook_id=ebook_id, format='pdf') }}" class="btn btn-secondary btn-sm">Download</a>
+                                                <a href="{{ url_for('publish_ebook', ebook_id=ebook_id) }}" class="btn btn-success btn-sm">Publish</a>
+                                                <a href="{{ url_for('delete_ebook', ebook_id=ebook_id) }}" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this eBook?')">Delete</a>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                    {% else %}
+                                    <div class="empty-state">
+                                        <i class="fas fa-book"></i>
+                                        <p>You haven't created any eBooks yet.</p>
+                                        <a href="#" class="btn btn-primary tab-link" data-tab="create">Create Your First eBook</a>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Publish to Amazon Tab -->
+                        <div class="tab-pane" id="publish-tab">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3>Amazon KDP Publishing</h3>
+                                </div>
+                                <div class="card-body">
+                                    <div class="amazon-setup">
+                                        <h4>Amazon KDP Account Setup</h4>
+                                        <form action="{{ url_for('update_kdp_settings') }}" method="post">
+                                            <div class="form-group">
+                                                <label for="kdp_email">Amazon KDP Email:</label>
+                                                <input type="email" id="kdp_email" name="kdp_email" value="{{ kdp_email }}" placeholder="Your Amazon KDP account email">
+                                            </div>
+                                            
+                                            <div class="form-group">
+                                                <label for="kdp_password">Amazon KDP Password:</label>
+                                                <input type="password" id="kdp_password" name="kdp_password" value="{{ kdp_password }}" placeholder="Your Amazon KDP account password">
+                                                <small>Your credentials are stored securely and only used for publishing to KDP.</small>
+                                            </div>
+                                            
+                                            <div class="form-actions">
+                                                <button type="submit" class="btn btn-primary">Save KDP Settings</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                    
+                                    <div class="amazon-publishing-steps">
+                                        <h4>Publishing Process</h4>
+                                        <div class="process-steps">
+                                            <div class="process-step">
+                                                <div class="step-number">1</div>
+                                                <div class="step-content">
+                                                    <h4>Select eBook</h4>
+                                                    <p>Choose a completed eBook from your library to publish.</p>
+                                                </div>
+                                            </div>
+                                            <div class="process-step">
+                                                <div class="step-number">2</div>
+                                                <div class="step-content">
+                                                    <h4>Configure Settings</h4>
+                                                    <p>Set pricing, royalty options, and categories for your eBook.</p>
+                                                </div>
+                                            </div>
+                                            <div class="process-step">
+                                                <div class="step-number">3</div>
+                                                <div class="step-content">
+                                                    <h4>Submit for Review</h4>
+                                                    <p>Submit your eBook to Amazon KDP for review and publishing.</p>
+                                                </div>
+                                            </div>
+                                            <div class="process-step">
+                                                <div class="step-number">4</div>
+                                                <div class="step-content">
+                                                    <h4>Track Status</h4>
+                                                    <p>Monitor the review and publishing status of your eBook.</p>
+                                                </div>
+                                            </div>
+                                            <div class="process-step">
+                                                <div class="step-number">5</div>
+                                                <div class="step-content">
+                                                    <h4>Manage Sales</h4>
+                                                    <p>Track sales, reviews, and manage your published eBooks.</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="amazon-publishing-tips">
+                                        <h4>Amazon KDP Publishing Tips</h4>
+                                        <ul class="tips-list">
+                                            <li>
+                                                <i class="fas fa-check-circle"></i>
+                                                <div>
+                                                    <h5>Optimize Your Title and Subtitle</h5>
+                                                    <p>Include keywords that potential readers might search for.</p>
+                                                </div>
+                                            </li>
+                                            <li>
+                                                <i class="fas fa-check-circle"></i>
+                                                <div>
+                                                    <h5>Choose the Right Categories</h5>
+                                                    <p>Select categories where your book has the best chance to rank well.</p>
+                                                </div>
+                                            </li>
+                                            <li>
+                                                <i class="fas fa-check-circle"></i>
+                                                <div>
+                                                    <h5>Set Competitive Pricing</h5>
+                                                    <p>Research similar books in your category to determine optimal pricing.</p>
+                                                </div>
+                                            </li>
+                                            <li>
+                                                <i class="fas fa-check-circle"></i>
+                                                <div>
+                                                    <h5>Enroll in KDP Select</h5>
+                                                    <p>Consider enrolling in KDP Select for additional promotional opportunities.</p>
+                                                </div>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>&copy; 2025 MoneyPrinterV2 | Powered by OpenAI</p>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Tab functionality
+            const tabButtons = document.querySelectorAll('.tab-btn');
+            const tabPanes = document.querySelectorAll('.tab-pane');
+            const tabLinks = document.querySelectorAll('.tab-link');
+            
+            function setActiveTab(tabId) {
+                // Hide all tab panes
+                tabPanes.forEach(pane => {
+                    pane.classList.remove('active');
+                });
+                
+                // Remove active class from all tab buttons
+                tabButtons.forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                
+                // Show the selected tab pane
+                document.getElementById(tabId + '-tab').classList.add('active');
+                
+                // Add active class to the selected tab button
+                document.querySelector(`.tab-btn[data-tab="${tabId}"]`).classList.add('active');
+            }
+            
+            // Tab button click handler
+            tabButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+                    setActiveTab(tabId);
+                });
+            });
+            
+            // Tab link click handler
+            tabLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const tabId = this.getAttribute('data-tab');
+                    setActiveTab(tabId);
+                });
+            });
+            
+            // Generate theme button
+            const generateThemeBtn = document.getElementById('generate-theme-btn');
+            if (generateThemeBtn) {
+                generateThemeBtn.addEventListener('click', function() {
+                    fetch('/generate_ebook_theme', {
+                        method: 'POST'
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.theme) {
+                            document.getElementById('theme').value = data.theme;
+                        } else if (data.error) {
+                            alert('Error: ' + data.error);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Failed to generate theme. Please try again.');
+                    });
+                });
+            }
+        });
+    </script>
+</body>
+</html>

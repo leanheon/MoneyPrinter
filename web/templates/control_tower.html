@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control Tower - MoneyPrinterV2</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <h1><i class="fas fa-money-bill-wave"></i> MoneyPrinterV2</h1>
+                <p>AI-Powered Content Monetization Control Tower</p>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="{{ url_for('index') }}" class="active"><i class="fas fa-home"></i> Control Tower</a></li>
+                    <li><a href="{{ url_for('generate') }}"><i class="fas fa-pen"></i> Generate Content</a></li>
+                    <li><a href="{{ url_for('monetization') }}"><i class="fas fa-dollar-sign"></i> Monetization</a></li>
+                    <li><a href="{{ url_for('digital_products') }}"><i class="fas fa-file-alt"></i> Digital Products</a></li>
+                    <li><a href="{{ url_for('config') }}"><i class="fas fa-cog"></i> Settings</a></li>
+                </ul>
+            </nav>
+        </header>
+
+        <main>
+            <div class="dashboard">
+                <h2>MoneyPrinterV2 Control Tower</h2>
+                
+                {% if not has_api_key %}
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <p>OpenAI API key not configured. Please go to <a href="{{ url_for('config') }}">Settings</a> to add your API key.</p>
+                </div>
+                {% endif %}
+                
+                {% if error %}
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <p>Error: {{ error }}</p>
+                </div>
+                {% endif %}
+                
+                {% if not initialized and not initializing %}
+                <div class="card">
+                    <div class="card-header">
+                        <h3>System Initialization</h3>
+                    </div>
+                    <div class="card-body">
+                        <p>The system needs to be initialized before use.</p>
+                        <button id="initialize-btn" class="btn btn-primary">Initialize System</button>
+                    </div>
+                </div>
+                {% elif initializing %}
+                <div class="card">
+                    <div class="card-header">
+                        <h3>System Initialization</h3>
+                    </div>
+                    <div class="card-body">
+                        <p>Initializing system components...</p>
+                        <div class="loader"></div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="card">
+                    <div class="card-header">
+                        <h3>System Status</h3>
+                    </div>
+                    <div class="card-body">
+                        <p><i class="fas fa-check-circle text-success"></i> System initialized and ready to use.</p>
+                        <div class="system-stats">
+                            <div class="stat">
+                                <i class="fas fa-server"></i>
+                                <span>System: Active</span>
+                            </div>
+                            <div class="stat">
+                                <i class="fas fa-brain"></i>
+                                <span>OpenAI: Connected</span>
+                            </div>
+                            <div class="stat">
+                                <i class="fas fa-database"></i>
+                                <span>Data: Ready</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <div class="control-tower-grid">
+                    <!-- Content Generation Module -->
+                    <div class="card module-card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-pen"></i> Content Generation</h3>
+                        </div>
+                        <div class="card-body">
+                            <p>Create AI-generated content for multiple platforms.</p>
+                            <div class="platform-buttons">
+                                <a href="{{ url_for('generate') }}?platform=youtube" class="platform-btn youtube">
+                                    <i class="fab fa-youtube"></i> YouTube
+                                </a>
+                                <a href="{{ url_for('generate') }}?platform=twitter" class="platform-btn twitter">
+                                    <i class="fab fa-twitter"></i> X (Twitter)
+                                </a>
+                                <a href="{{ url_for('generate') }}?platform=threads" class="platform-btn threads">
+                                    <i class="fas fa-comment-dots"></i> Threads
+                                </a>
+                            </div>
+                            <div class="module-actions">
+                                <a href="{{ url_for('generate') }}" class="btn btn-primary">Generate Content</a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Monetization Module -->
+                    <div class="card module-card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-dollar-sign"></i> Monetization</h3>
+                        </div>
+                        <div class="card-body">
+                            <p>Manage and track your monetization methods.</p>
+                            <div class="monetization-buttons">
+                                <a href="{{ url_for('generate') }}?monetization_type=affiliate" class="monetization-btn affiliate">
+                                    <i class="fas fa-link"></i> Affiliate
+                                </a>
+                                <a href="{{ url_for('generate') }}?monetization_type=sponsorship" class="monetization-btn sponsorship">
+                                    <i class="fas fa-handshake"></i> Sponsorship
+                                </a>
+                                <a href="{{ url_for('generate') }}?monetization_type=digital_product" class="monetization-btn product">
+                                    <i class="fas fa-file-alt"></i> Products
+                                </a>
+                                <a href="{{ url_for('generate') }}?monetization_type=subscription" class="monetization-btn subscription">
+                                    <i class="fas fa-users"></i> Subscription
+                                </a>
+                            </div>
+                            <div class="module-actions">
+                                <a href="{{ url_for('monetization') }}" class="btn btn-primary">Monetization Dashboard</a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Digital Products Module -->
+                    <div class="card module-card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-file-alt"></i> Digital Products</h3>
+                        </div>
+                        <div class="card-body">
+                            <p>Create and manage digital products for sale.</p>
+                            <div class="product-buttons">
+                                <a href="{{ url_for('create_product') }}?product_type=ebook" class="product-btn ebook">
+                                    <i class="fas fa-book"></i> E-Book
+                                </a>
+                                <a href="{{ url_for('create_product') }}?product_type=guide" class="product-btn guide">
+                                    <i class="fas fa-map"></i> Guide
+                                </a>
+                                <a href="{{ url_for('create_product') }}?product_type=template" class="product-btn template">
+                                    <i class="fas fa-file-code"></i> Template
+                                </a>
+                                <a href="{{ url_for('create_product') }}?product_type=checklist" class="product-btn checklist">
+                                    <i class="fas fa-tasks"></i> Checklist
+                                </a>
+                            </div>
+                            <div class="module-actions">
+                                <a href="{{ url_for('digital_products') }}" class="btn btn-primary">Product Catalog</a>
+                                <a href="{{ url_for('create_product') }}" class="btn btn-secondary">Create Product</a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Analytics Module -->
+                    <div class="card module-card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-chart-line"></i> Analytics</h3>
+                        </div>
+                        <div class="card-body">
+                            <p>Track performance and revenue metrics.</p>
+                            <div class="analytics-preview">
+                                <div class="metric">
+                                    <div class="metric-value">$0</div>
+                                    <div class="metric-label">Estimated Revenue</div>
+                                </div>
+                                <div class="metric">
+                                    <div class="metric-value">0</div>
+                                    <div class="metric-label">Content Pieces</div>
+                                </div>
+                                <div class="metric">
+                                    <div class="metric-value">0</div>
+                                    <div class="metric-label">Products</div>
+                                </div>
+                            </div>
+                            <div class="module-actions">
+                                <a href="{{ url_for('monetization') }}" class="btn btn-primary">View Analytics</a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Automation Module -->
+                    <div class="card module-card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-robot"></i> Automation</h3>
+                        </div>
+                        <div class="card-body">
+                            <p>Set up automated content generation and posting.</p>
+                            <div class="automation-options">
+                                <div class="automation-option">
+                                    <input type="checkbox" id="auto-youtube" name="auto-youtube">
+                                    <label for="auto-youtube">YouTube Automation</label>
+                                </div>
+                                <div class="automation-option">
+                                    <input type="checkbox" id="auto-twitter" name="auto-twitter">
+                                    <label for="auto-twitter">X (Twitter) Automation</label>
+                                </div>
+                                <div class="automation-option">
+                                    <input type="checkbox" id="auto-threads" name="auto-threads">
+                                    <label for="auto-threads">Threads Automation</label>
+                                </div>
+                                <div class="automation-option">
+                                    <input type="checkbox" id="auto-monetization" name="auto-monetization">
+                                    <label for="auto-monetization">Auto-Monetization</label>
+                                </div>
+                            </div>
+                            <div class="module-actions">
+                                <button class="btn btn-primary">Configure Automation</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Settings Module -->
+                    <div class="card module-card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-cog"></i> Settings</h3>
+                        </div>
+                        <div class="card-body">
+                            <p>Configure system settings and API keys.</p>
+                            <div class="settings-preview">
+                                <div class="setting-item">
+                                    <i class="fas fa-key"></i>
+                                    <span>API Keys</span>
+                                </div>
+                                <div class="setting-item">
+                                    <i class="fas fa-sliders-h"></i>
+                                    <span>Preferences</span>
+                                </div>
+                                <div class="setting-item">
+                                    <i class="fas fa-user"></i>
+                                    <span>Account</span>
+                                </div>
+                                <div class="setting-item">
+                                    <i class="fas fa-shield-alt"></i>
+                                    <span>Security</span>
+                                </div>
+                            </div>
+                            <div class="module-actions">
+                                <a href="{{ url_for('config') }}" class="btn btn-primary">System Settings</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Quick Actions Bar -->
+                <div class="quick-actions-bar">
+                    <div class="quick-action">
+                        <a href="{{ url_for('generate') }}" class="quick-action-btn">
+                            <i class="fas fa-bolt"></i>
+                            <span>Quick Generate</span>
+                        </a>
+                    </div>
+                    <div class="quick-action">
+                        <a href="{{ url_for('create_product') }}" class="quick-action-btn">
+                            <i class="fas fa-plus-circle"></i>
+                            <span>New Product</span>
+                        </a>
+                    </div>
+                    <div class="quick-action">
+                        <a href="#" class="quick-action-btn" id="generate-topic-btn">
+                            <i class="fas fa-lightbulb"></i>
+                            <span>Topic Ideas</span>
+                        </a>
+                    </div>
+                    <div class="quick-action">
+                        <a href="{{ url_for('config') }}" class="quick-action-btn">
+                            <i class="fas fa-cog"></i>
+                            <span>Settings</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>&copy; 2025 MoneyPrinterV2 | Powered by OpenAI</p>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const initializeBtn = document.getElementById('initialize-btn');
+            const generateTopicBtn = document.getElementById('generate-topic-btn');
+            
+            if (initializeBtn) {
+                initializeBtn.addEventListener('click', function() {
+                    initializeSystem();
+                });
+            }
+            
+            if (generateTopicBtn) {
+                generateTopicBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    generateTopic();
+                });
+            }
+            
+            {% if initializing %}
+            checkInitStatus();
+            {% endif %}
+        });
+        
+        function initializeSystem() {
+            fetch('/initialize', {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                location.reload();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+        
+        function checkInitStatus() {
+            fetch('/status')
+            .then(response => response.json())
+            .then(data => {
+                if (data.initialized || data.error) {
+                    location.reload();
+                } else if (data.initializing) {
+                    setTimeout(checkInitStatus, 2000);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                setTimeout(checkInitStatus, 5000);
+            });
+        }
+        
+        function generateTopic() {
+            fetch('/generate_topic', {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.topic) {
+                    // Create a modal to display the topic
+                    const modal = document.createElement('div');
+                    modal.className = 'modal';
+                    modal.innerHTML = `
+                        <div class="modal-content">
+                            <span class="close">&times;</span>
+                            <h3>Generated Topic Idea</h3>
+                            <p>${data.topic}</p>
+                            <div class="modal-actions">
+                                <a href="{{ url_for('generate') }}?topic=${encodeURIComponent(data.topic)}" class="btn btn-primary">Use This Topic</a>
+                                <button class="btn btn-secondary modal-close">Close</button>
+                            </div>
+                        </div>
+                    `;
+                    document.body.appendChild(modal);
+                    
+                    // Show the modal
+                    modal.style.display = 'flex';
+                    
+                    // Close button functionality
+                    const closeBtn = modal.querySelector('.close');
+                    const closeModalBtn = modal.querySelector('.modal-close');
+                    
+                    closeBtn.addEventListener('click', function() {
+                        modal.style.display = 'none';
+                        document.body.removeChild(modal);
+                    });
+                    
+                    closeModalBtn.addEventListener('click', function() {
+                        modal.style.display = 'none';
+                        document.body.removeChild(modal);
+                    });
+                    
+                    // Close when clicking outside the modal
+                    window.addEventListener('click', function(event) {
+                        if (event.target == modal) {
+                            modal.style.display = 'none';
+                            document.body.removeChild(modal);
+                        }
+                    });
+                } else if (data.error) {
+                    alert('Error: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to generate topic. Please try again.');
+            });
+        }
+    </script>
+</body>
+</html>

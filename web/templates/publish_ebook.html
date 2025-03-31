@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Publish eBook to Amazon - MoneyPrinterV2</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <h1><i class="fas fa-money-bill-wave"></i> MoneyPrinterV2</h1>
+                <p>AI-Powered Content Monetization</p>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="{{ url_for('index') }}"><i class="fas fa-home"></i> Control Tower</a></li>
+                    <li><a href="{{ url_for('generate') }}"><i class="fas fa-pen"></i> Generate Content</a></li>
+                    <li><a href="{{ url_for('monetization') }}"><i class="fas fa-dollar-sign"></i> Monetization</a></li>
+                    <li><a href="{{ url_for('ebook_generator_page') }}" class="active"><i class="fas fa-book"></i> eBook Generator</a></li>
+                    <li><a href="{{ url_for('digital_products') }}"><i class="fas fa-file-alt"></i> Digital Products</a></li>
+                    <li><a href="{{ url_for('config') }}"><i class="fas fa-cog"></i> Settings</a></li>
+                </ul>
+            </nav>
+        </header>
+
+        <main>
+            <div class="content-section">
+                <div class="breadcrumbs">
+                    <a href="{{ url_for('ebook_generator_page') }}">eBook Generator</a> &gt; 
+                    <a href="{{ url_for('view_ebook', ebook_id=ebook.id) }}">{{ ebook.title }}</a> &gt;
+                    <span>Publish to Amazon</span>
+                </div>
+                
+                {% if error %}
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <p>Error: {{ error }}</p>
+                </div>
+                {% endif %}
+                
+                {% if success %}
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle"></i>
+                    <p>{{ success }}</p>
+                </div>
+                {% endif %}
+                
+                <div class="publish-ebook">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>Publish "{{ ebook.title }}" to Amazon KDP</h2>
+                        </div>
+                        <div class="card-body">
+                            <div class="ebook-summary">
+                                <div class="ebook-cover">
+                                    {% if ebook.cover_path %}
+                                    <img src="{{ url_for('static', filename='ebooks/' + ebook.id + '/cover.png') }}" alt="{{ ebook.title }} cover">
+                                    {% else %}
+                                    <div class="placeholder-cover">
+                                        <i class="fas fa-book"></i>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="ebook-details">
+                                    <h3>{{ ebook.title }}</h3>
+                                    <h4>{{ ebook.subtitle }}</h4>
+                                    
+                                    <div class="ebook-meta">
+                                        <div class="meta-item">
+                                            <i class="fas fa-file-alt"></i>
+                                            <span>{{ ebook.metadata.word_count }} words</span>
+                                        </div>
+                                        <div class="meta-item">
+                                            <i class="fas fa-book-open"></i>
+                                            <span>{{ ebook.chapters|length }} chapters</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="ebook-formats">
+                                        <h5>Available Formats:</h5>
+                                        <ul>
+                                            {% for format_name in ebook.formats.keys() %}
+                                            <li><i class="fas fa-check-circle"></i> {{ format_name|upper }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            {% if result and result.status == "ready_for_publishing" %}
+                            <div class="publishing-instructions">
+                                <h3>Publishing Instructions</h3>
+                                <p>Your eBook is ready for publishing to Amazon KDP. Follow these steps to complete the process:</p>
+                                
+                                <ol class="instruction-steps">
+                                    {% for instruction in result.instructions %}
+                                    <li>{{ instruction }}</li>
+                                    {% endfor %}
+                                </ol>
+                                
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle"></i>
+                                    <p>Amazon KDP typically takes 24-72 hours to review and publish your eBook.</p>
+                                </div>
+                                
+                                <div class="form-actions">
+                                    <a href="{{ url_for('view_ebook', ebook_id=ebook.id) }}" class="btn btn-secondary">
+                                        <i class="fas fa-arrow-left"></i> Back to eBook
+                                    </a>
+                                    <a href="https://kdp.amazon.com" target="_blank" class="btn btn-primary">
+                                        <i class="fas fa-external-link-alt"></i> Go to Amazon KDP
+                                    </a>
+                                </div>
+                            </div>
+                            {% else %}
+                            <form action="{{ url_for('publish_ebook', ebook_id=ebook.id) }}" method="post">
+                                <div class="form-group">
+                                    <label for="kdp_email">Amazon KDP Email:</label>
+                                    <input type="email" id="kdp_email" name="kdp_email" value="{{ kdp_email }}" placeholder="Your Amazon KDP account email" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="kdp_password">Amazon KDP Password:</label>
+                                    <input type="password" id="kdp_password" name="kdp_password" value="{{ kdp_password }}" placeholder="Your Amazon KDP account password" required>
+                                    <small>Your credentials are stored securely and only used for publishing to KDP.</small>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="book_language">Book Language:</label>
+                                    <select id="book_language" name="book_language" required>
+                                        <option value="en">English</option>
+                                        <option value="es">Spanish</option>
+                                        <option value="fr">French</option>
+                                        <option value="de">German</option>
+                                        <option value="it">Italian</option>
+                                        <option value="pt">Portuguese</option>
+                                        <option value="ja">Japanese</option>
+                                        <option value="zh">Chinese</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="book_categories">Book Categories (select up to 2):</label>
+                                    <select id="book_categories" name="book_categories" multiple required>
+                                        <option value="business">Business & Money</option>
+                                        <option value="computers">Computers & Technology</option>
+                                        <option value="education">Education & Teaching</option>
+                                        <option value="health">Health, Fitness & Dieting</option>
+                                        <option value="selfhelp">Self-Help</option>
+                                        <option value="cooking">Cookbooks, Food & Wine</option>
+                                        <option value="crafts">Crafts, Hobbies & Home</option>
+                                        <option value="parenting">Parenting & Relationships</option>
+                                        <option value="travel">Travel</option>
+                                    </select>
+                                    <small>Hold Ctrl/Cmd to select multiple categories (max 2)</small>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="book_keywords">Keywords (comma-separated):</label>
+                                    <input type="text" id="book_keywords" name="book_keywords" placeholder="keyword1, keyword2, keyword3, etc." required>
+                                    <small>Enter up to 7 keywords to help readers find your book</small>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="book_price">Book Price (USD):</label>
+                                    <input type="number" id="book_price" name="book_price" min="0.99" max="9.99" step="1.00" value="2.99" required>
+                                    <small>Recommended price range: $0.99 - $9.99 (70% royalty for $2.99 - $9.99)</small>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="kdp_select">Enroll in KDP Select:</label>
+                                    <div class="checkbox-group">
+                                        <input type="checkbox" id="kdp_select" name="kdp_select" checked>
+                                        <label for="kdp_select">Yes, enroll my book in KDP Select for 90 days</label>
+                                    </div>
+                                    <small>KDP Select gives you access to promotional tools and higher royalties in some markets</small>
+                                </div>
+                                
+                                <div class="form-actions">
+                                    <a href="{{ url_for('view_ebook', ebook_id=ebook.id) }}" class="btn btn-secondary">Cancel</a>
+                                    <button type="submit" class="btn btn-primary">Publish to Amazon</button>
+                                </div>
+                            </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Amazon KDP Publishing Tips</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="tips-grid">
+                                <div class="tip-item">
+                                    <div class="tip-icon">
+                                        <i class="fas fa-search"></i>
+                                    </div>
+                                    <div class="tip-content">
+                                        <h4>Optimize Keywords</h4>
+                                        <p>Use specific, relevant keywords that potential readers might search for. Research popular keywords in your niche.</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="tip-item">
+                                    <div class="tip-icon">
+                                        <i class="fas fa-tags"></i>
+                                    </div>
+                                    <div class="tip-content">
+                                        <h4>Choose Categories Carefully</h4>
+                                        <p>Select categories where your book has the best chance to rank well, balancing popularity with competition.</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="tip-item">
+                                    <div class="tip-icon">
+                                        <i class="fas fa-dollar-sign"></i>
+                                    </div>
+                                    <div class="tip-content">
+                                        <h4>Strategic Pricing</h4>
+                                        <p>Price between $2.99 and $9.99 to qualify for 70% royalty. Consider launching at a lower price to gain initial reviews.</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="tip-item">
+                                    <div class="tip-icon">
+                                        <i class="fas fa-book-open"></i>
+                                    </div>
+                                    <div class="tip-content">
+                                        <h4>KDP Select Benefits</h4>
+                                        <p>Enrolling in KDP Select gives you access to Kindle Unlimited readers and promotional tools like Countdown Deals.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>&copy; 2025 MoneyPrinterV2 | Powered by OpenAI</p>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>

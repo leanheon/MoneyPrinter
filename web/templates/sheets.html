@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Sheets Integration - MoneyPrinter</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Google Sheets Integration</h1>
+            <nav>
+                <a href="{{ url_for('index') }}">Dashboard</a>
+                <a href="{{ url_for('generate') }}">Generate Content</a>
+                <a href="{{ url_for('monetization') }}">Monetization</a>
+                <a href="{{ url_for('digital_products') }}">Digital Products</a>
+                <a href="{{ url_for('config') }}">Settings</a>
+            </nav>
+        </header>
+
+        <main>
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="messages">
+                        {% for category, message in messages %}
+                            <div class="message {{ category }}">{{ message }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            <section class="card">
+                <h2>Connect to Spreadsheet</h2>
+                <form action="{{ url_for('sheets') }}" method="post">
+                    <input type="hidden" name="action" value="connect">
+                    <div class="form-group">
+                        <label for="spreadsheet_id">Spreadsheet ID:</label>
+                        <input type="text" id="spreadsheet_id" name="spreadsheet_id" value="{{ spreadsheet_id }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="spreadsheet_name">OR Spreadsheet Name:</label>
+                        <input type="text" id="spreadsheet_name" name="spreadsheet_name" value="{{ spreadsheet_name }}">
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn primary">Connect</button>
+                    </div>
+                </form>
+            </section>
+
+            <section class="card">
+                <h2>Create Template Spreadsheet</h2>
+                <form action="{{ url_for('sheets') }}" method="post">
+                    <input type="hidden" name="action" value="create_template">
+                    <div class="form-group">
+                        <label for="template_name">Spreadsheet Name:</label>
+                        <input type="text" id="template_name" name="template_name" value="MoneyPrinter Content">
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn primary">Create Template</button>
+                    </div>
+                </form>
+            </section>
+
+            <section class="card">
+                <h2>Add Content Item</h2>
+                <form action="{{ url_for('sheets') }}" method="post">
+                    <input type="hidden" name="action" value="add_content">
+                    <div class="form-group">
+                        <label for="topic">Topic:</label>
+                        <input type="text" id="topic" name="topic" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="content_type">Content Type:</label>
+                        <select id="content_type" name="content_type" required>
+                            <option value="shorts">Shorts</option>
+                            <option value="blog">Blog Post</option>
+                        </select>
+                    </div>
+                    <div class="form-group shorts-options">
+                        <label for="is_knowledge">Knowledge Short:</label>
+                        <select id="is_knowledge" name="is_knowledge">
+                            <option value="false">Story-based</option>
+                            <option value="true">Knowledge-based</option>
+                        </select>
+                    </div>
+                    <div class="form-group blog-options" style="display: none;">
+                        <label for="length">Blog Length:</label>
+                        <select id="length" name="length">
+                            <option value="short">Short</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="long">Long</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="script">Script (Optional):</label>
+                        <textarea id="script" name="script" rows="5"></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn primary">Add Content</button>
+                    </div>
+                </form>
+            </section>
+
+            <section class="card">
+                <h2>Process Pending Content</h2>
+                <form action="{{ url_for('sheets') }}" method="post">
+                    <input type="hidden" name="action" value="process_pending">
+                    <div class="form-group">
+                        <label for="filter_type">Filter by Type:</label>
+                        <select id="filter_type" name="filter_type">
+                            <option value="">All Types</option>
+                            <option value="shorts">Shorts</option>
+                            <option value="blog">Blog Posts</option>
+                        </select>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn primary">Process Pending</button>
+                    </div>
+                </form>
+            </section>
+
+            {% if pending_content %}
+                <section class="card">
+                    <h2>Pending Content ({{ pending_content|length }} items)</h2>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Topic</th>
+                                <th>Type</th>
+                                <th>Date Created</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in pending_content %}
+                                <tr>
+                                    <td>{{ item.Topic }}</td>
+                                    <td>{{ item.Type }}</td>
+                                    <td>{{ item.get('Date Created', 'N/A') }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </section>
+            {% endif %}
+
+            {% if process_results %}
+                <section class="card">
+                    <h2>Processing Results</h2>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>Status</th>
+                                <th>Details</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for result in process_results %}
+                                <tr>
+                                    <td>{{ result.get('type', 'Unknown') }}</td>
+                                    <td>{{ 'Success' if result.get('success') else 'Failed' }}</td>
+                                    <td>
+                                        {% if result.get('success') %}
+                                            {% if result.get('video_path') %}
+                                                Video created: {{ result.get('video_path') }}
+                                            {% elif result.get('url') %}
+                                                Published at: {{ result.get('url') }}
+                                            {% else %}
+                                                Processed successfully
+                                            {% endif %}
+                                        {% else %}
+                                            Error: {{ result.get('error', 'Unknown error') }}
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </section>
+            {% endif %}
+        </main>
+    </div>
+
+    <script>
+        // Show/hide options based on content type
+        document.getElementById('content_type').addEventListener('change', function() {
+            const shortsOptions = document.querySelector('.shorts-options');
+            const blogOptions = document.querySelector('.blog-options');
+            
+            if (this.value === 'shorts' || this.value === 'short') {
+                shortsOptions.style.display = 'block';
+                blogOptions.style.display = 'none';
+            } else if (this.value === 'blog' || this.value === 'blogpost') {
+                shortsOptions.style.display = 'none';
+                blogOptions.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>

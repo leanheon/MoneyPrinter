@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Content - MoneyPrinter</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>View Generated Content</h1>
+            <nav>
+                <a href="{{ url_for('index') }}">Dashboard</a>
+                <a href="{{ url_for('generate') }}">Generate Content</a>
+                <a href="{{ url_for('monetization') }}">Monetization</a>
+                <a href="{{ url_for('digital_products') }}">Digital Products</a>
+                <a href="{{ url_for('sheets') }}">Google Sheets</a>
+                <a href="{{ url_for('config') }}">Settings</a>
+            </nav>
+        </header>
+
+        <main>
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="messages">
+                        {% for category, message in messages %}
+                            <div class="message {{ category }}">{{ message }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            <section class="card">
+                <h2>{{ platform|capitalize }} Content</h2>
+                
+                {% if platform == 'youtube' %}
+                    <div class="content-display">
+                        <h3>{{ content.title }}</h3>
+                        <div class="content-meta">Topic: {{ content.topic }}</div>
+                        <div class="content-body">
+                            <pre>{{ content.script }}</pre>
+                        </div>
+                    </div>
+                
+                {% elif platform == 'twitter' or platform == 'threads' %}
+                    <div class="content-display">
+                        <div class="content-meta">Topic: {{ content.topic }}</div>
+                        <div class="content-body">
+                            <pre>{{ content.post }}</pre>
+                        </div>
+                    </div>
+                
+                {% elif platform == 'chuu' %}
+                    <div class="content-display">
+                        <h3>{{ content.title }}</h3>
+                        <div class="content-meta">
+                            Topic: {{ content.topic }}<br>
+                            Type: {{ 'Knowledge Short' if content.is_knowledge else 'Story Short' }}
+                        </div>
+                        <div class="content-body">
+                            <pre>{{ content.script }}</pre>
+                        </div>
+                        
+                        {% if content.video_path %}
+                            <div class="video-preview">
+                                <h4>Generated Video</h4>
+                                <video width="320" height="568" controls>
+                                    <source src="{{ content.video_path }}" type="video/mp4">
+                                    Your browser does not support the video tag.
+                                </video>
+                            </div>
+                        {% else %}
+                            <div class="actions">
+                                <form action="{{ url_for('create_short') }}" method="post">
+                                    <button type="submit" class="btn primary">Create Short</button>
+                                </form>
+                            </div>
+                        {% endif %}
+                    </div>
+                
+                {% elif platform == 'blog' %}
+                    <div class="content-display">
+                        <h3>{{ content.title }}</h3>
+                        <div class="content-meta">
+                            Topic: {{ content.topic }}<br>
+                            Word Count: {{ content.word_count }}
+                        </div>
+                        
+                        {% if content.image_path %}
+                            <div class="featured-image">
+                                <img src="{{ content.image_path }}" alt="{{ content.title }}" style="max-width: 100%; height: auto;">
+                            </div>
+                        {% endif %}
+                        
+                        <div class="content-body blog-content">
+                            {{ content.content|safe }}
+                        </div>
+                        
+                        {% if content.post_url %}
+                            <div class="publish-info">
+                                <p>Published at: <a href="{{ content.post_url }}" target="_blank">{{ content.post_url }}</a></p>
+                            </div>
+                        {% else %}
+                            <div class="actions">
+                                <form action="{{ url_for('publish_blog') }}" method="post">
+                                    <button type="submit" class="btn primary">Publish Blog Post</button>
+                                </form>
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endif %}
+                
+                {% if monetized %}
+                    <div class="monetization-section">
+                        <h3>Monetization</h3>
+                        <div class="monetized-content">
+                            {% if monetized.affiliate_links %}
+                                <div class="affiliate-links">
+                                    <h4>Affiliate Links</h4>
+                                    <ul>
+                                        {% for link in monetized.affiliate_links %}
+                                            <li>{{ link }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            {% endif %}
+                            
+                            {% if monetized.sponsorship %}
+                                <div class="sponsorship">
+                                    <h4>Sponsorship</h4>
+                                    <pre>{{ monetized.sponsorship }}</pre>
+                                </div>
+                            {% endif %}
+                            
+                            {% if monetized.digital_product %}
+                                <div class="digital-product">
+                                    <h4>Digital Product</h4>
+                                    <p>{{ monetized.digital_product }}</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endif %}
+                
+                <div class="actions">
+                    <a href="{{ url_for('generate') }}" class="btn">Generate More Content</a>
+                </div>
+            </section>
+        </main>
+    </div>
+</body>
+</html>
