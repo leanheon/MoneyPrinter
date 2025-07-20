@@ -3,6 +3,10 @@ import sys
 import time
 import unittest
 from datetime import datetime
+
+# Ensure src package is discoverable when running tests directly
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from src.news_automation_system import NewsAutomationSystem
 from src.automation_scheduler import AutomationScheduler
 from src.channel_manager import ChannelManager

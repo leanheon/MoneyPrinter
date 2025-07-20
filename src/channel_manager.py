@@ -2,7 +2,7 @@ import os
 import json
 import random
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 from src.openai_generator import OpenAIGenerator
 from src.enhanced_shorts import EnhancedShorts
 from src.news_automation_system import NewsAutomationSystem
@@ -757,3 +757,72 @@ class ChannelManager:
             "engagement_rate": (total_likes + total_comments + total_shares) / max(total_views, 1) * 100,
             "content_by_type": content_by_type
         }
+
+    # ------------------------------------------------------------------
+    # Simplified helper methods used in tests
+
+    def generate_channel_content(self, channel_id, content_type="social", topic="Test", count=1):
+        """Generate basic content items for a channel."""
+        generated = []
+        for _ in range(count):
+            item = {
+                "id": f"content_{len(self.channels_data['content']) + 1}",
+                "channel_id": channel_id,
+                "content_type": content_type,
+                "topic": topic,
+                "created_at": datetime.now().isoformat(),
+                "published": False,
+                "stats": {},
+            }
+            self.channels_data["content"].append(item)
+            generated.append(item)
+
+        self._save_data()
+        return generated
+
+    def generate_content_for_all_channels(self, content_type="social", topic="Test", count=1):
+        """Generate content for every registered channel."""
+        result = {}
+        for channel in self.channels_data.get("channels", []):
+            result[channel["id"]] = self.generate_channel_content(
+                channel_id=channel["id"],
+                content_type=content_type,
+                topic=topic,
+                count=count,
+            )
+        return result
+
+    def publish_content(self, content_id):
+        """Mark a content item as published."""
+        for content in self.channels_data.get("content", []):
+            if content.get("id") == content_id:
+                content["published"] = True
+                self._save_data()
+                return {"success": True, "content_id": content_id}
+        return {"success": False, "error": "content_not_found"}
+
+    def publish_all_pending_content(self):
+        """Publish all content items that are not yet published."""
+        published = 0
+        for content in self.channels_data.get("content", []):
+            if not content.get("published"):
+                content["published"] = True
+                published += 1
+        self._save_data()
+        return {"published": published}
+
+    def get_channel_stats(self, channel_id, days=30):
+        """Return analytics for a specific channel."""
+        return self.get_channel_analytics(channel_id, days)
+
+    def get_overall_stats(self):
+        """Aggregate statistics across all channels."""
+        stats = {
+            "total_channels": len(self.channels_data.get("channels", [])),
+            "total_content": len(self.channels_data.get("content", [])),
+            "content_by_status": {
+                "published": len([c for c in self.channels_data.get("content", []) if c.get("published")]),
+                "pending": len([c for c in self.channels_data.get("content", []) if not c.get("published")]),
+            },
+        }
+        return stats

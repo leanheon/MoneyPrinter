@@ -12,7 +12,7 @@ class OpenAIGenerator:
     def __init__(self):
         config = get_config()
         self.api_key = config.get("openai", {}).get("api_key", "")
-        self.client = openai.OpenAI(api_key=self.api_key)
+        self.client = openai.OpenAI(api_key=self.api_key) if self.api_key else None
         self.default_model = config.get("openai", {}).get("model", "gpt-3.5-turbo")
         self.image_model = config.get("openai", {}).get("image_model", "dall-e-3")
         self.temperature = config.get("openai", {}).get("temperature", 0.7)
@@ -41,6 +41,10 @@ class OpenAIGenerator:
             
         messages.append({"role": "user", "content": prompt})
         
+        if not self.client:
+            # Return placeholder content when API key is not provided
+            return f"Placeholder content {abs(hash(prompt)) % 10000}"
+
         try:
             response = self.client.chat.completions.create(
                 model=self.default_model,
@@ -82,6 +86,12 @@ class OpenAIGenerator:
             
         messages.append({"role": "user", "content": prompt})
         
+        if not self.client:
+            placeholder = output_structure or {}
+            if isinstance(placeholder, dict):
+                return {k: f"placeholder_{abs(hash(prompt + k)) % 1000}" for k in placeholder}
+            return {}
+
         try:
             response = self.client.chat.completions.create(
                 model=self.default_model,
@@ -90,7 +100,7 @@ class OpenAIGenerator:
                 temperature=self.temperature,
                 response_format={"type": "json_object"}
             )
-            
+
             content = response.choices[0].message.content
             return json.loads(content)
         except json.JSONDecodeError:
@@ -111,6 +121,9 @@ class OpenAIGenerator:
         Returns:
             str: Path to the generated image or None if error
         """
+        if not self.client:
+            return None
+
         try:
             response = self.client.images.generate(
                 model=self.image_model,

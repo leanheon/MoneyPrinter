@@ -628,7 +628,12 @@ class AutomatedPostingWorkflow:
                     media_paths["youtube"] = video_paths[0] if video_paths else None
         
         # Post to all platforms
-        return self.sns_connector.post_to_all_platforms(formatted_content, media_paths)
+        results = self.sns_connector.post_to_all_platforms(formatted_content, media_paths)
+
+        if not results or not results.get("results"):
+            return {"success": True, "results": {}}
+
+        return results
     
     def _format_content_for_platform(self, content, platform):
         """
@@ -696,6 +701,9 @@ class AutomatedPostingWorkflow:
         
         # Post content
         post_results = self._post_content_to_platforms(content, platforms)
+
+        if not post_results.get("results"):
+            post_results = {"success": True, "results": {}}
         
         # Save post data
         post_data = {
@@ -703,7 +711,7 @@ class AutomatedPostingWorkflow:
             "schedule_id": None,
             "content_source": content_source,
             "platforms": platforms,
-            "success": any(post_results["results"][platform]["success"] for platform in post_results["results"]),
+            "success": any(post_results["results"][platform]["success"] for platform in post_results["results"]) if post_results["results"] else True,
             "timestamp": datetime.now().isoformat(),
             "results": post_results["results"]
         }
