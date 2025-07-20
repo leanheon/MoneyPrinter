@@ -1,7 +1,7 @@
 import os
 
 # Create necessary directories
-os.makedirs(os.path.join(os.path.dirname(os.path.abspath(__file__)), "src", "constants.py"), exist_ok=True)
+os.makedirs(os.path.join(os.path.dirname(os.path.abspath(__file__)), "src"), exist_ok=True)
 
 # Create constants.py file
 constants_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "src", "constants.py")
