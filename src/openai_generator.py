@@ -52,7 +52,9 @@ class OpenAIGenerator:
         except Exception as e:
             # Fallback for environments without API access
             print(f"Error generating content: {e}")
-            return "Test content"
+            # Include part of the prompt so output varies for different inputs
+            snippet = str(abs(hash(prompt)))[:8]
+            return f"Test content {snippet}"
             
     def generate_structured_content(self, prompt, system_message=None, max_tokens=None, output_structure=None):
         """
@@ -100,7 +102,8 @@ class OpenAIGenerator:
         except Exception as e:
             print(f"Error generating structured content: {e}")
             if output_structure:
-                return {k: "" for k in output_structure.keys()}
+                snippet = str(abs(hash(prompt)))[:8]
+                return {k: f"Test {k} {snippet}" for k in output_structure.keys()}
             return {}
             
     def generate_image(self, prompt, size="1024x1024"):

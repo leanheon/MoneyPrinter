@@ -18,9 +18,10 @@ class IntegratedSocialMediaSystem:
         Initialize the IntegratedSocialMediaSystem.
         """
         self.posting_workflow = AutomatedPostingWorkflow()
-        self.sns_connector = ExpandedSNSConnector()
-        self.integrated_workflow = IntegratedWorkflow()
-        self.channel_manager = ChannelManager()
+        # Delay creation of connectors and managers so tests can patch the classes
+        self.sns_connector = None
+        self.integrated_workflow = None
+        self.channel_manager = None
         self.news_automation = NewsAutomationSystem()
         
         self.output_dir = os.path.join(ROOT_DIR, ".mp", "integrated_social")
@@ -80,9 +81,21 @@ class IntegratedSocialMediaSystem:
         try:
             with open(self.config_file, 'w', encoding='utf-8') as f:
                 json.dump(self.config, f, indent=2)
-                
+
         except Exception as e:
             print(f"Error saving integrated config: {e}")
+
+    def _get_sns_connector(self):
+        """Lazily create and return the SNS connector."""
+        if self.sns_connector is None:
+            self.sns_connector = ExpandedSNSConnector()
+        return self.sns_connector
+
+    def _get_integrated_workflow(self):
+        """Lazily create and return the IntegratedWorkflow manager."""
+        if self.integrated_workflow is None:
+            self.integrated_workflow = IntegratedWorkflow()
+        return self.integrated_workflow
     
     def configure_platform_integration(self, platform, enabled):
         """
@@ -165,8 +178,9 @@ class IntegratedSocialMediaSystem:
         Returns:
             bool: True if setup was successful
         """
+        connector = self._get_sns_connector()
         if platform == "twitter":
-            return self.sns_connector.configure_twitter(
+            return connector.configure_twitter(
                 api_key=credentials.get("api_key"),
                 api_secret=credentials.get("api_secret"),
                 access_token=credentials.get("access_token"),
@@ -175,20 +189,20 @@ class IntegratedSocialMediaSystem:
             )
             
         elif platform == "threads":
-            return self.sns_connector.configure_threads(
+            return connector.configure_threads(
                 username=credentials.get("username"),
                 password=credentials.get("password")
             )
             
         elif platform == "instagram":
-            return self.sns_connector.configure_instagram(
+            return connector.configure_instagram(
                 username=credentials.get("username"),
                 password=credentials.get("password"),
                 access_token=credentials.get("access_token")
             )
             
         elif platform == "facebook":
-            return self.sns_connector.configure_facebook(
+            return connector.configure_facebook(
                 app_id=credentials.get("app_id"),
                 app_secret=credentials.get("app_secret"),
                 access_token=credentials.get("access_token"),
@@ -196,21 +210,21 @@ class IntegratedSocialMediaSystem:
             )
             
         elif platform == "linkedin":
-            return self.sns_connector.configure_linkedin(
+            return connector.configure_linkedin(
                 client_id=credentials.get("client_id"),
                 client_secret=credentials.get("client_secret"),
                 access_token=credentials.get("access_token")
             )
             
         elif platform == "tiktok":
-            return self.sns_connector.configure_tiktok(
+            return connector.configure_tiktok(
                 client_key=credentials.get("client_key"),
                 client_secret=credentials.get("client_secret"),
                 access_token=credentials.get("access_token")
             )
             
         elif platform == "youtube":
-            return self.sns_connector.configure_youtube(
+            return connector.configure_youtube(
                 client_id=credentials.get("client_id"),
                 client_secret=credentials.get("client_secret"),
                 api_key=credentials.get("api_key"),
@@ -398,7 +412,8 @@ class IntegratedSocialMediaSystem:
                 media_paths["youtube"] = shorts_content.get("video_path")
         
         # Post to all platforms
-        return self.sns_connector.post_to_all_platforms(formatted_content, media_paths)
+        connector = self._get_sns_connector()
+        return connector.post_to_all_platforms(formatted_content, media_paths)
     
     def _create_schedule_for_content_type(self, content_type, channel_id=None):
         """
@@ -444,8 +459,9 @@ class IntegratedSocialMediaSystem:
         Returns:
             dict: Workflow run result
         """
+        workflow_manager = self._get_integrated_workflow()
         # Run the workflow
-        workflow_result = self.integrated_workflow.run_workflow(workflow_id)
+        workflow_result = workflow_manager.run_workflow(workflow_id)
         
         if not workflow_result["success"]:
             return workflow_result
@@ -528,6 +544,15 @@ class IntegratedSocialMediaSystem:
         Returns:
             dict: Created pipeline
         """
+        # Default schedule configuration
+        if schedule_config is None:
+            schedule_config = {}
+
+        # Create channel manager and workflow instances lazily so tests can patch them
+        if self.channel_manager is None:
+            self.channel_manager = ChannelManager()
+        workflow_manager = self._get_integrated_workflow()
+
         # Create channel if configuration is provided
         channel_id = None
         if channel_config:
@@ -559,7 +584,7 @@ class IntegratedSocialMediaSystem:
             schedules.append(schedule)
         
         # Create integrated workflow
-        workflow = self.integrated_workflow.create_workflow(
+        workflow = workflow_manager.create_workflow(
             name=f"{name} Pipeline",
             description=f"Social media pipeline for {name}",
             steps=[
@@ -597,7 +622,7 @@ class IntegratedSocialMediaSystem:
         )
         
         # Schedule the workflow
-        workflow_schedule = self.integrated_workflow.schedule_workflow(
+        workflow_schedule = workflow_manager.schedule_workflow(
             workflow["id"],
             schedule_config.get("interval_hours", 24)
         )
@@ -624,11 +649,12 @@ class IntegratedSocialMediaSystem:
     def get_social_media_status(self):
         """
         Get status of all social media platforms.
-        
+
         Returns:
             dict: Platform status
         """
-        return self.sns_connector.get_platform_status()
+        connector = self._get_sns_connector()
+        return connector.get_platform_status()
     
     def get_recent_posts(self, limit=10):
         """
@@ -668,7 +694,8 @@ class IntegratedSocialMediaSystem:
             dict: Service status
         """
         posting_started = self.posting_workflow.start_scheduler()
-        workflow_started = self.integrated_workflow.start_all_services()
+        workflow_manager = self._get_integrated_workflow()
+        workflow_started = workflow_manager.start_all_services()
         
         return {
             "posting_scheduler_started": posting_started,
@@ -684,7 +711,8 @@ class IntegratedSocialMediaSystem:
             dict: Service status
         """
         posting_stopped = self.posting_workflow.stop_scheduler()
-        workflow_stopped = self.integrated_workflow.stop_all_services()
+        workflow_manager = self._get_integrated_workflow()
+        workflow_stopped = workflow_manager.stop_all_services()
         
         return {
             "posting_scheduler_stopped": posting_stopped,
