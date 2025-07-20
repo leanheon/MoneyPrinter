@@ -194,6 +194,7 @@ MoneyPrinter is designed to be modular and extensible:
 ## Requirements
 
 - Python 3.6+
+- Install Python packages from `requirements.txt`
 - OpenAI API key
 - FFmpeg (for video generation)
 - Google API credentials (for Sheets integration)

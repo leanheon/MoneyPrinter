@@ -2,6 +2,11 @@ import unittest
 import os
 import json
 from unittest.mock import patch, MagicMock
+
+# Add parent directory to path to import modules
+import sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from src.expanded_sns_connector import ExpandedSNSConnector
 from src.automated_posting_workflow import AutomatedPostingWorkflow
 from src.integrated_social_media_system import IntegratedSocialMediaSystem
