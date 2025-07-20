@@ -275,6 +275,7 @@ class ChannelManager:
             if result and "video_path" in result:
                 content_data = {
                     "content_id": f"content_{len(self.channels_data['content']) + 1}",
+                    "id": f"content_{len(self.channels_data['content']) + 1}",
                     "channel_id": channel_id,
                     "content_type": "shorts",
                     "topic": topic,
@@ -285,6 +286,7 @@ class ChannelManager:
                     "thumbnail_path": result.get("thumbnail_path"),
                     "dropbox_link": result.get("dropbox_link"),
                     "created_at": datetime.now().isoformat(),
+                    "status": "pending",
                     "stats": {
                         "views": 0,
                         "likes": 0,
@@ -300,6 +302,7 @@ class ChannelManager:
             if post_data:
                 content_data = {
                     "content_id": f"content_{len(self.channels_data['content']) + 1}",
+                    "id": f"content_{len(self.channels_data['content']) + 1}",
                     "channel_id": channel_id,
                     "content_type": "social",
                     "topic": topic,
@@ -307,6 +310,7 @@ class ChannelManager:
                     "text": post_data.get("text", ""),
                     "image_path": post_data.get("image_path"),
                     "created_at": datetime.now().isoformat(),
+                    "status": "pending",
                     "stats": {
                         "likes": 0,
                         "comments": 0,
@@ -321,6 +325,7 @@ class ChannelManager:
             if blog_post:
                 content_data = {
                     "content_id": f"content_{len(self.channels_data['content']) + 1}",
+                    "id": f"content_{len(self.channels_data['content']) + 1}",
                     "channel_id": channel_id,
                     "content_type": "blog",
                     "topic": topic,
@@ -328,6 +333,7 @@ class ChannelManager:
                     "content": blog_post.get("content", ""),
                     "image_path": blog_post.get("image_path"),
                     "created_at": datetime.now().isoformat(),
+                    "status": "pending",
                     "stats": {
                         "views": 0,
                         "likes": 0,
@@ -756,4 +762,65 @@ class ChannelManager:
             "total_shares": total_shares,
             "engagement_rate": (total_likes + total_comments + total_shares) / max(total_views, 1) * 100,
             "content_by_type": content_by_type
+        }
+
+    def generate_channel_content(self, channel_id, content_type="shorts", topic=None):
+        """Generate and return a list with a single piece of content."""
+        content = self.generate_content_for_channel(channel_id, content_type, topic)
+        return [content] if isinstance(content, dict) else []
+
+    def publish_content(self, content_id):
+        """Mark a content item as published."""
+        for content in self.channels_data.get("content", []):
+            if content.get("content_id") == content_id:
+                content["status"] = "published"
+                self._save_data()
+                return {"content_id": content_id, "status": "published"}
+        return {"error": "content_not_found"}
+
+    def generate_content_for_all_channels(self, content_type="shorts", topic=None, count=1):
+        """Generate content for every channel."""
+        results = {}
+        for channel in self.channels_data.get("channels", []):
+            channel_results = []
+            for _ in range(count):
+                item = self.generate_content_for_channel(channel["id"], content_type, topic)
+                if isinstance(item, dict):
+                    channel_results.append(item)
+            results[channel["id"]] = channel_results
+        return results
+
+    def publish_all_pending_content(self):
+        """Publish every content item that is not yet published."""
+        published = []
+        for content in self.channels_data.get("content", []):
+            if content.get("status") != "published":
+                content["status"] = "published"
+                published.append(content["content_id"])
+        if published:
+            self._save_data()
+        return {"published": published}
+
+    def get_channel_stats(self, channel_id):
+        """Return simple statistics for a channel."""
+        items = self.get_channel_content(channel_id, limit=1000)
+        published = len([c for c in items if c.get("status") == "published"])
+        return {
+            "channel_id": channel_id,
+            "total_content": len(items),
+            "published": published,
+            "pending": len(items) - published,
+        }
+
+    def get_overall_stats(self):
+        """Aggregate statistics across all channels."""
+        total_content = len(self.channels_data.get("content", []))
+        published = len([c for c in self.channels_data.get("content", []) if c.get("status") == "published"])
+        return {
+            "total_channels": len(self.channels_data.get("channels", [])),
+            "total_content": total_content,
+            "content_by_status": {
+                "published": published,
+                "pending": total_content - published,
+            },
         }

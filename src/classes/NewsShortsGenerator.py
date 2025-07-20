@@ -225,9 +225,10 @@ class NewsShortsGenerator(ShortsGenerator):
         
         # Generate script
         script = self.openai_generator.generate_content(prompt, system_message, max_tokens=500)
-        
+
         # Log and store the script
-        self.logger.info(f"Generated news script with {len(script.split('\\n'))} sentences")
+        num_sentences = len(script.splitlines())
+        self.logger.info(f"Generated news script with {num_sentences} sentences")
         self.script = script.strip()
         
         return self.script

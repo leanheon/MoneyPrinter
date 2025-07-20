@@ -529,9 +529,13 @@ class IntegratedSocialMediaSystem:
             dict: Created pipeline
         """
         # Create channel if configuration is provided
+        schedule_config = schedule_config or {}
+        manager = ChannelManager()
+        workflow_system = IntegratedWorkflow()
+
         channel_id = None
         if channel_config:
-            channel = self.channel_manager.create_channel(
+            channel = manager.create_channel(
                 name=channel_config.get("name", name),
                 theme=channel_config.get("theme", "General"),
                 personality=channel_config.get("personality", "Informative"),
@@ -559,7 +563,7 @@ class IntegratedSocialMediaSystem:
             schedules.append(schedule)
         
         # Create integrated workflow
-        workflow = self.integrated_workflow.create_workflow(
+        workflow = workflow_system.create_workflow(
             name=f"{name} Pipeline",
             description=f"Social media pipeline for {name}",
             steps=[
@@ -597,7 +601,7 @@ class IntegratedSocialMediaSystem:
         )
         
         # Schedule the workflow
-        workflow_schedule = self.integrated_workflow.schedule_workflow(
+        workflow_schedule = workflow_system.schedule_workflow(
             workflow["id"],
             schedule_config.get("interval_hours", 24)
         )
