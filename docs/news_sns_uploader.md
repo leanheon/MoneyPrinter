@@ -36,6 +36,8 @@ The system consists of four main components:
 pip install -r requirements.txt
 ```
 
+This command installs Flask along with the rest of the dependencies.
+
 3. Configure the system by creating a configuration file (see Configuration section)
 
 ## Configuration

@@ -57,6 +57,7 @@ MoneyPrinter is a comprehensive automated content creation system designed to he
    ```
    pip install -r requirements.txt
    ```
+   This will install Flask and all other required packages.
 3. Set up API keys in the configuration file
 
 ### Configuration
