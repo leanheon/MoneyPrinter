@@ -2,6 +2,11 @@ import unittest
 import os
 import json
 from unittest.mock import patch, MagicMock
+import sys
+
+# Ensure project root is on the path
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from src.expanded_sns_connector import ExpandedSNSConnector
 from src.automated_posting_workflow import AutomatedPostingWorkflow
 from src.integrated_social_media_system import IntegratedSocialMediaSystem

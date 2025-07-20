@@ -3,6 +3,10 @@ import sys
 import time
 import unittest
 from datetime import datetime
+
+# Ensure project root is on the path
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from src.news_automation_system import NewsAutomationSystem
 from src.automation_scheduler import AutomationScheduler
 from src.channel_manager import ChannelManager
