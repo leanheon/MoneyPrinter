@@ -16,8 +16,9 @@ class AutomatedPostingWorkflow:
         """
         Initialize the AutomatedPostingWorkflow.
         """
-        self.sns_connector = ExpandedSNSConnector()
-        self.channel_manager = ChannelManager()
+        # Delay creation of connectors so tests can patch the classes
+        self.sns_connector = None
+        self.channel_manager = None
         self.news_automation = NewsAutomationSystem()
         
         self.output_dir = os.path.join(ROOT_DIR, ".mp", "automated_posting")
@@ -118,6 +119,18 @@ class AutomatedPostingWorkflow:
             },
             "last_updated": datetime.now().isoformat()
         }
+
+    def _get_sns_connector(self):
+        """Lazily create and return the SNS connector."""
+        if self.sns_connector is None:
+            self.sns_connector = ExpandedSNSConnector()
+        return self.sns_connector
+
+    def _get_channel_manager(self):
+        """Lazily create and return the ChannelManager."""
+        if self.channel_manager is None:
+            self.channel_manager = ChannelManager()
+        return self.channel_manager
     
     def _save_config(self):
         """
@@ -221,7 +234,8 @@ class AutomatedPostingWorkflow:
         self._save_config()
         
         # Update SNS connector settings
-        self.sns_connector.update_settings({
+        connector = self._get_sns_connector()
+        connector.update_settings({
             "auto_hashtags": self.config["content_formatting"]["auto_hashtags"],
             "auto_format": self.config["content_formatting"]["auto_format"],
             "include_link": self.config["content_formatting"]["include_link"],
@@ -488,7 +502,8 @@ class AutomatedPostingWorkflow:
             dict: Content data
         """
         # Get channel content
-        content = self.channel_manager.generate_channel_content(
+        manager = self._get_channel_manager()
+        content = manager.generate_channel_content(
             channel_id=channel_id,
             content_type="social",
             count=1
@@ -628,7 +643,8 @@ class AutomatedPostingWorkflow:
                     media_paths["youtube"] = video_paths[0] if video_paths else None
         
         # Post to all platforms
-        return self.sns_connector.post_to_all_platforms(formatted_content, media_paths)
+        connector = self._get_sns_connector()
+        return connector.post_to_all_platforms(formatted_content, media_paths)
     
     def _format_content_for_platform(self, content, platform):
         """
